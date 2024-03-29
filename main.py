@@ -16,7 +16,6 @@ class Window(FluentWindow):
     def __init__(self):
         super().__init__()
 
-        # 创建子界面，实际使用时将 Widget 换成自己的子界面
         self.homeInterface = HomePage()
         self.sign = signpage()
         self.launchpad = LaunchpadPage()
