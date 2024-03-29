@@ -4,3 +4,4 @@
 启动台：帮助用户调整启动台应用程序的显示行数/列数。
 截图设置：帮助用户设置截图的保存路径、文件名前缀以及截图格式。
 系统信息：展示用户的CPU型号、内存大小、系统版本和机型等信息。
+<img width="900" alt="image" src="https://github.com/NoneName1234/macOS-Helper/assets/112495742/0e18b141-9ae4-4454-b8c9-9740aef26cd4">
