@@ -2,6 +2,8 @@ import platform
 import subprocess
 import os
 import threading
+import webbrowser
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QWidget, QSizePolicy, QSpacerItem, QButtonGroup, QGroupBox
 from PyQt5.QtWidgets import QFrame, QHBoxLayout
@@ -47,9 +49,10 @@ class HomePage(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.text, alignment=Qt.AlignCenter)
         layout.addWidget(self.button, alignment=Qt.AlignCenter)
-
+        self.button.clicked.connect(self.open_github_url)
         self.setLayout(layout)
-
+    def open_github_url(self):
+        webbrowser.open("https://github.com/NoneName1234/macOS-Helper.git")
 class signpage(Widget):
     def __init__(self, parent=None):
         super().__init__('签名', parent)
@@ -106,10 +109,9 @@ class LaunchpadPage(QWidget):
         about_text.setStyleSheet("font-size: 14px; color: #333333;")
 
 
-        tips_text = SubtitleLabel('请输入行数和列数，建议输入一个小于 30 且大于 3 的整数。', self)
+        tips_text = SubtitleLabel('请输入行数和列数，输入一个小于 30 且大于 3 的整数。', self)
         tips_text.setStyleSheet("font-size: 14px; color: #333333;")
 
-        # Input fields layout
         input_layout = QHBoxLayout()
         input_layout.setAlignment(Qt.AlignCenter)
         input_layout.setSpacing(10)
@@ -131,7 +133,6 @@ class LaunchpadPage(QWidget):
         main_layout.addWidget(tips_text)
         main_layout.addLayout(input_layout)
 
-        # Buttons layout
         button_layout = QVBoxLayout()
         button_layout.setAlignment(Qt.AlignCenter)
 
@@ -153,8 +154,6 @@ class LaunchpadPage(QWidget):
         self.start_button.clicked.connect(self.change_icon_size)
         self.restore_button.clicked.connect(self.recovery_icon_size)
 
-
-    # 修改启动台图标行数/列数
     def change_icon_size(self, parent=None):
         width, height = self.width.text(), self.height.text()
         try:
@@ -213,20 +212,28 @@ class ScreenPrintPage(QWidget):
 
         # 截图格式部分
         format_group = QGroupBox('截图格式')
-        format_layout = QVBoxLayout()
+        self.format_layout = QVBoxLayout()
         self.usebmp = RadioButton('*.bmp')
         self.usejpge = RadioButton('*.jpge')
         self.usegif = RadioButton('*.gif')
         self.usepng = RadioButton('*.png')
         self.usepdf = RadioButton('*.pdf')
         self.usetiff = RadioButton('*.tiff')
-        format_layout.addWidget(self.usebmp)
-        format_layout.addWidget(self.usejpge)
-        format_layout.addWidget(self.usegif)
-        format_layout.addWidget(self.usepng)
-        format_layout.addWidget(self.usepdf)
-        format_layout.addWidget(self.usetiff)
-        format_group.setLayout(format_layout)
+
+        self.usebmp.toggled.connect(self.getExtension)
+        self.usejpge.toggled.connect(self.getExtension)
+        self.usegif.toggled.connect(self.getExtension)
+        self.usepng.toggled.connect(self.getExtension)
+        self.usepdf.toggled.connect(self.getExtension)
+        self.usetiff.toggled.connect(self.getExtension)
+
+        self.format_layout.addWidget(self.usebmp)
+        self.format_layout.addWidget(self.usejpge)
+        self.format_layout.addWidget(self.usegif)
+        self.format_layout.addWidget(self.usepng)
+        self.format_layout.addWidget(self.usepdf)
+        self.format_layout.addWidget(self.usetiff)
+        format_group.setLayout(self.format_layout)
         layout.addWidget(format_group)
 
         layout.addSpacing(20)  # 添加空白间距
@@ -238,30 +245,25 @@ class ScreenPrintPage(QWidget):
         layout.addStretch(1)  # 添加伸缩空间，使按钮位于底部
         self.PrintScreenSavePathChosesButton.clicked.connect(self.PrintScreenSavePathChoses)
         self.setLayout(layout)
+
+    def getExtension(self):
+        sender = self.sender()
+        if sender.isChecked():
+            return (sender.text().replace("*.", ""))
+        else:
+            return None
     def start(self):
         try:
             result = None
             self.screenshot_save_path = None
-            if self.usebmp.isChecked():
-                result = "bmp"
-            if self.usejpge.isChecked():
-                result = "jpge"
-            if self.usegif.isChecked():
-                result = "gif"
-            if self.usepng.isChecked():
-                result = "png"
-            if self.usepdf.isChecked():
-                result = "pdf"
-            if self.usetiff.isChecked():
-                result = "tiff"
+            if self.getExtension() is not None:
+                subprocess.run(['defaults', 'write', 'com.apple.screencapture', 'type', result])
+                print("defaults write com.apple.screencapture type "+ self.getExtension())
 
             if self.screenshot_prefixLineEdit != "" or self.screenshot_prefixLineEdit != None:
                 subprocess.run(['defaults', 'write', 'com.apple.screencapture', 'name', self.screenshot_prefixLineEdit.text()])
 
-            if result != None:
-                subprocess.run(['defaults', 'write', 'com.apple.screencapture', 'type', result])
-                print("defaults write com.apple.screencapture type "+ result)
-            if self.screenshot_save_path != None or self.screenshot_save_path != "":
+            if self.screenshot_save_path != None:
                 subprocess.run(['defaults', 'write', 'com.apple.screencapture', 'name', self.screenshot_save_path])
             # 重启Finder
             subprocess.run(['killall', 'Finder'])
